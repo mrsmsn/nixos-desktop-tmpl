@@ -1,0 +1,45 @@
+name: Update flake.lock
+
+on:
+  schedule:
+    # Mon & Thu 06:00 JST (= Sun & Wed 21:00 UTC)
+    - cron: "0 21 * * 0,3"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+  # Needed by the "Trigger CI on the update branch" step below, which calls
+  # the workflow_dispatch API.
+  actions: write
+
+jobs:
+  update-flake-lock:
+    runs-on: ubuntu-latest
+    env:
+      # If a PAT (FLAKE_UPDATE_TOKEN) is configured, PRs opened with it will
+      # trigger pull_request events normally. PRs opened with the default
+      # GITHUB_TOKEN don't (GitHub's anti-recursion rule), so in that case we
+      # dispatch CI manually in the step below.
+      HAS_PAT: ${{ secrets.FLAKE_UPDATE_TOKEN != '' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: cachix/install-nix-action@v31
+        with:
+          extra_nix_config: |
+            experimental-features = nix-command flakes
+            access-tokens = github.com=${{ secrets.GITHUB_TOKEN }}
+      - name: Update flake.lock and open PR
+        id: update
+        uses: DeterminateSystems/update-flake-lock@v28
+        with:
+          branch: update-flake-lock
+          pr-title: "chore: update flake.lock"
+          pr-labels: dependencies
+          commit-msg: "chore: update flake.lock"
+          token: ${{ secrets.FLAKE_UPDATE_TOKEN || github.token }}
+      - name: Trigger CI on the update branch
+        if: env.HAS_PAT != 'true' && steps.update.outputs.pull-request-number != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run ci.yml --ref update-flake-lock

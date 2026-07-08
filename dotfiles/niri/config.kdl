@@ -1,0 +1,131 @@
+// niri config (KDL) — https://yalter.github.io/niri/
+//
+// このファイルは home-manager 管理 (dotfiles/niri/config.kdl)。
+// read-only symlink として ~/.config/niri/config.kdl に配布される。
+// niri-flake の home-manager settings は使わないので型検証は効かない。
+// 変更後は実機で `niri validate` を実行して構文を確認すること。
+//
+// CapsLock -> Ctrl は NixOS の xremap (system モード) が担うので niri 側では扱わない。
+// Mod は Super (Windows キー)。
+
+input {
+    keyboard {
+        xkb {
+            layout "us"
+        }
+    }
+    touchpad {
+        tap
+        natural-scroll
+    }
+    focus-follows-mouse max-scroll-amount="0%"
+}
+
+// サーバーサイド装飾を好む (ウィンドウ側の余計なタイトルバーを避ける)。
+prefer-no-csd
+
+// ---- レイアウト ----
+layout {
+    // 空 {} だと既定プリセットに戻るので proportion を明示する。
+    default-column-width { proportion 0.96; }
+    // 直前の列と並べて画面に収まらない幅の窓 (0.96 等) は中央、収まる窓 (0.5 等) は端寄せ。
+    center-focused-column "on-overflow"
+
+    // フォーカス窓だけを囲むリング。全窓に出る border とは別物 (border は既定 off のまま)。
+    focus-ring {
+        width 3
+    }
+
+    // Alt+R (switch-preset-column-width) が循環する幅。先頭に 0.96 を置き、
+    // 押し続ければデフォルト幅に戻れるようにする。
+    preset-column-widths {
+        proportion 0.96
+        proportion 0.5
+        proportion 0.33333
+    }
+}
+
+// ---- ウィンドウルール ----
+window-rule {
+    geometry-corner-radius 12
+    // これが無いと角丸はボーダー描画だけに効き、ウィンドウ内容の角は四角のまま。
+    clip-to-geometry true
+}
+
+// スクリーンショットの保存先。
+screenshot-path "~/Pictures/Screenshots/screenshot-%Y-%m-%d-%H-%M-%S.png"
+
+// ---- 自動起動 ----
+// Noctalia デスクトップシェル (バー/ランチャー/通知/ロック/壁紙/OSD を統合)。
+spawn-at-startup "noctalia"
+// fcitx5: init タイミング問題 (niri#2283) が出る場合は systemd user service
+// 化や遅延起動に切り替える。
+spawn-at-startup "fcitx5" "-d" "--replace"
+
+// ---- キーバインド ----
+binds {
+    // ヘルプ (バインド一覧)
+    Alt+Shift+Slash { show-hotkey-overlay; }
+
+    // アプリ起動 / Noctalia シェル操作 (IPC は `noctalia msg ...`)
+    Ctrl+Space  hotkey-overlay-title="Launcher"           { spawn-sh "noctalia msg panel-toggle launcher"; }
+    Super+V     hotkey-overlay-title="Clipboard"          { spawn-sh "noctalia msg panel-toggle clipboard"; }
+    Super+S     hotkey-overlay-title="Control Center"     { spawn-sh "noctalia msg panel-toggle control-center"; }
+    Super+I     hotkey-overlay-title="Noctalia Settings"  { spawn-sh "noctalia msg settings-toggle"; }
+    Super+L     hotkey-overlay-title="Lock"               { spawn-sh "noctalia msg session lock"; }
+
+    // ウィンドウ操作
+    Super+W { close-window; }
+
+    // フォーカス移動
+    Alt+Left  { focus-column-left; }
+    Alt+Right { focus-column-right; }
+    Alt+Up    { focus-window-up; }
+    Alt+Down  { focus-window-down; }
+    Alt+H { focus-column-left; }
+    Alt+L { focus-column-right; }
+    Alt+J { focus-window-down; }
+    Alt+K { focus-window-up; }
+
+    // ウィンドウ移動
+    Alt+Shift+Left  { move-column-left; }
+    Alt+Shift+Right { move-column-right; }
+    Alt+Shift+H { move-column-left; }
+    Alt+Shift+L { move-column-right; }
+    Alt+Shift+J { move-window-down; }
+    Alt+Shift+K { move-window-up; }
+
+    // ワークスペース
+    Alt+1 { focus-workspace 1; }
+    Alt+2 { focus-workspace 2; }
+    Alt+3 { focus-workspace 3; }
+    Alt+4 { focus-workspace 4; }
+    Alt+Shift+1 { move-column-to-workspace 1; }
+    Alt+Shift+2 { move-column-to-workspace 2; }
+    Alt+Shift+3 { move-column-to-workspace 3; }
+    Alt+Shift+4 { move-column-to-workspace 4; }
+
+    // レイアウト
+    Alt+R { switch-preset-column-width; }
+    Alt+C hotkey-overlay-title="Center column" { center-column; } // windowをセンターにするショートカット
+    Alt+F { maximize-column; }
+    Alt+Shift+F { fullscreen-window; }
+    Alt+Minus { set-column-width "-10%"; }
+    Alt+Equal { set-column-width "+10%"; }
+    Alt+Comma  { consume-window-into-column; }
+    Alt+Period { expel-window-from-column; }
+
+    // スクリーンショット
+    Print { screenshot; }
+    Ctrl+Print { screenshot-screen; }
+    Alt+Print  { screenshot-window; }
+
+    // 音量 (PipeWire / wpctl)
+    XF86AudioRaiseVolume allow-when-locked=true { spawn "wpctl" "set-volume" "@DEFAULT_AUDIO_SINK@" "5%+"; }
+    XF86AudioLowerVolume allow-when-locked=true { spawn "wpctl" "set-volume" "@DEFAULT_AUDIO_SINK@" "5%-"; }
+    XF86AudioMute        allow-when-locked=true { spawn "wpctl" "set-mute"   "@DEFAULT_AUDIO_SINK@" "toggle"; }
+
+    // 終了
+    Alt+Shift+E { quit; }
+    Alt+Shift+P { power-off-monitors; }
+}

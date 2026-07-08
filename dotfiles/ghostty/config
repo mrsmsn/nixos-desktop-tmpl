@@ -1,0 +1,13 @@
+# テーマ (Ghostty 内蔵。Linux/macOS 共通)
+theme = tokyonight
+
+# 背景透過
+background-opacity = 0.9
+# background-blur-radius = 20
+
+# マウスカーソルを非表示にする
+mouse-hide-while-typing = true
+
+# SSH 接続時に xterm-ghostty terminfo をリモートへ自動配布
+# (リモートで `missing or unsuitable terminal: xterm-ghostty` を防ぐ)
+shell-integration-features = cursor,sudo,title,ssh-env,ssh-terminfo

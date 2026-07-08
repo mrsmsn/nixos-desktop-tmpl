@@ -1,0 +1,22 @@
+[dock]
+auto_hide = true
+
+[hot_corners.top_right]
+action = "control_center"
+
+[shell]
+app_icon_color = "primary"
+app_icon_colorize = true
+ui_scale = 1.1
+
+    [shell.animation]
+    speed = 1.4
+
+[theme]
+builtin = "Tokyo-Night"
+
+[wallpaper]
+directory = "@HOME@/Pictures/Wallpapers"
+
+    [wallpaper.default]
+    path = "@HOME@/Pictures/Wallpapers/tokyo-night.png"
