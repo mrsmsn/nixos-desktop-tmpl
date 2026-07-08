@@ -162,6 +162,14 @@ just update   # nix flake update
 A scheduled `update-flake-lock.yml` workflow also opens a PR against `flake.lock` twice a week;
 merging it and running `just switch` is the usual way to pick up upstream updates.
 
+> [!IMPORTANT]
+> For that workflow to open PRs with the default `GITHUB_TOKEN`, your repository must allow it:
+> **Settings → Actions → General → Workflow permissions → check "Allow GitHub Actions to create
+> and approve pull requests"**. This is a per-repository setting, so repos generated from this
+> template start with it disabled and the scheduled run fails at the "create pull request" step
+> until you flip it. Alternatively, store a fine-grained PAT as the `FLAKE_UPDATE_TOKEN` secret —
+> PRs opened with a PAT also trigger the CI workflow automatically.
+
 ## Troubleshooting
 
 - **Black screen after boot.** Double-check `vars.nix`'s `cpuVendor` matches your actual CPU
