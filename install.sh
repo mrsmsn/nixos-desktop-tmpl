@@ -84,6 +84,7 @@ resolve_target_dir() {
 
 # --- detection (each returns a value on stdout; args injectable for tests) ----
 
+# shellcheck disable=SC2120  # $1 is only injected from tests; production omits it
 detect_username() {
     printf '%s' "${1:-${USER:-}}"
 }
@@ -100,6 +101,7 @@ detect_hostname() {
 # Extract the leading MAJOR.MINOR from `nixos-version` output
 # (e.g. "25.11.20240101.abcdef (Warbler)" -> "25.11").
 # Pass the version string as $1 to test without invoking nixos-version.
+# shellcheck disable=SC2120  # $1 is only injected from tests; production omits it
 detect_state_version() {
     local raw="${1:-}"
     if [ -z "${raw}" ]; then
@@ -110,6 +112,7 @@ detect_state_version() {
 
 # Map the CPU vendor_id from /proc/cpuinfo to a nixos-hardware module selector.
 # Pass a file path as $1 to feed a fixture (there is no /proc on macOS).
+# shellcheck disable=SC2120  # $1 is only injected from tests; production omits it
 detect_cpu_vendor() {
     local cpuinfo="${1:-/proc/cpuinfo}"
     local vendor=""
@@ -193,10 +196,13 @@ main() {
     # 4. Detect and validate machine-specific values.
     log "Detecting machine-specific values"
     local username hostname state_version cpu_vendor
+    # shellcheck disable=SC2119  # the detect_* args are test-only overrides
     username="$(detect_username)"
-    # shellcheck disable=SC2119  # detect_hostname's arg is a test-only override
+    # shellcheck disable=SC2119  # the detect_* args are test-only overrides
     hostname="$(detect_hostname)"
+    # shellcheck disable=SC2119  # the detect_* args are test-only overrides
     state_version="$(detect_state_version)"
+    # shellcheck disable=SC2119  # the detect_* args are test-only overrides
     cpu_vendor="$(detect_cpu_vendor)"
 
     validate_username "${username}" \
