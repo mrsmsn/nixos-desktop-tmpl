@@ -66,10 +66,13 @@ jobs:
       - uses: actions/checkout@v4
       - name: bash syntax check
         run: bash -n install.sh
+      # shellcheck only understands POSIX/bash, so list the bash scripts
+      # explicitly instead of scanning the whole tree (a scan would choke on
+      # zsh dotfiles and on fcitx5's INI file named "profile"). zsh files are
+      # covered by the `zsh -n` step below. shellcheck is preinstalled on
+      # ubuntu-latest runners.
       - name: shellcheck
-        uses: ludeeus/action-shellcheck@master
-        with:
-          scandir: .
+        run: shellcheck install.sh dotfiles/tmux/pane-border.sh
       - name: Install zsh
         run: sudo apt-get update && sudo apt-get install -y zsh
       - name: zsh syntax check
